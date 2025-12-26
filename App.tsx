@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { BallRecord, BallType, InningsState } from './types';
 import { STORAGE_KEY, BALLS_PER_OVER } from './constants';
@@ -13,7 +12,6 @@ const App: React.FC = () => {
   const [isConfirmingReset, setIsConfirmingReset] = useState(false);
   const resetTimerRef = useRef<number | null>(null);
 
-  // Load state on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -29,20 +27,18 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Persist state on change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ history }));
   }, [history]);
 
   const addBall = (runs: number, type: BallType, isWicket: boolean) => {
-    // Cancel any pending reset if a ball is added
     if (isConfirmingReset) {
       setIsConfirmingReset(false);
       if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
     }
 
     const newBall: BallRecord = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       runs,
       type,
       isWicket,
@@ -63,14 +59,12 @@ const App: React.FC = () => {
 
   const handleResetRequest = () => {
     if (!isConfirmingReset) {
-      // First tap: Enter confirm state
       Haptics.light();
       setIsConfirmingReset(true);
       resetTimerRef.current = window.setTimeout(() => {
         setIsConfirmingReset(false);
-      }, 3000); // Revert after 3 seconds
+      }, 3000);
     } else {
-      // Second tap: Execute reset
       Haptics.error();
       setHistory([]);
       setIsConfirmingReset(false);
@@ -105,8 +99,12 @@ const App: React.FC = () => {
   }, [history]);
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto overflow-hidden bg-slate-950">
-      <div className="bg-slate-900/80 backdrop-blur-md p-6 shadow-2xl border-b border-slate-800 sticky top-0 z-10">
+    <div className="flex flex-col h-full max-w-md mx-auto bg-slate-950 border-x border-slate-900 shadow-2xl relative">
+      {/* Background Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-indigo-500/10 blur-[120px] pointer-events-none -z-10"></div>
+      
+      {/* 1. Sticky Header Section */}
+      <header className="p-4 pt-6 shrink-0">
         <Scoreboard 
           runs={stats.totalRuns} 
           wickets={stats.wickets} 
@@ -114,24 +112,39 @@ const App: React.FC = () => {
           onReset={handleResetRequest}
           isConfirmingReset={isConfirmingReset}
         />
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col">
-        <Controls onAction={addBall} onUndo={undoLastBall} canUndo={history.length > 0} />
+      {/* 2. Scrollable Body Content */}
+      <main className="flex-1 overflow-y-auto px-4 pb-20 no-scrollbar space-y-6">
+        <section className="mt-2">
+          <div className="flex items-center gap-4 mb-4">
+             <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase whitespace-nowrap">Input Controls</span>
+             <div className="h-[1px] w-full bg-slate-900"></div>
+          </div>
+          <Controls onAction={addBall} onUndo={undoLastBall} canUndo={history.length > 0} />
+        </section>
         
         <MatchAnalyst history={history} />
 
-        <div className="mt-8 border-t border-slate-800/50 pt-6 pb-12">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Innings Timeline</h3>
-            <div className="h-[1px] flex-1 bg-slate-800 mx-4"></div>
+        <section>
+          <div className="flex items-center gap-4 mb-4">
+             <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase whitespace-nowrap">Innings Timeline</span>
+             <div className="h-[1px] w-full bg-slate-900"></div>
           </div>
           <HistoryView history={history} />
-        </div>
-      </div>
+        </section>
+      </main>
 
-      <footer className="p-3 text-center text-[10px] text-slate-600 bg-slate-900/50 border-t border-slate-800 backdrop-blur-sm">
-        BOX CRICKET UMPIRE PRO <span className="mx-2 opacity-30">•</span> EST 2024
+      {/* 3. Sticky Footer Information */}
+      <footer className="shrink-0 p-4 bg-slate-950/80 backdrop-blur-xl border-t border-slate-900 flex justify-between items-center">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">BoxCricket Elite</span>
+          <span className="text-[10px] text-slate-400 font-medium">Digital Umpire v2.4</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase">Live Session</span>
+        </div>
       </footer>
     </div>
   );

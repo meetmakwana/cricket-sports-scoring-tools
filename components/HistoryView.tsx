@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { BallRecord, BallType } from '../types';
 import { BALLS_PER_OVER } from '../constants';
@@ -10,7 +9,6 @@ interface HistoryViewProps {
 const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Group balls into overs
   const overs = useMemo(() => {
     const result: BallRecord[][] = [];
     let currentOver: BallRecord[] = [];
@@ -21,7 +19,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
       if (ball.type === BallType.NORMAL) {
         legalBallsCount++;
         if (legalBallsCount === BALLS_PER_OVER) {
-          result.push(currentOver);
+          result.push([...currentOver]);
           currentOver = [];
           legalBallsCount = 0;
         }
@@ -35,7 +33,6 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
     return result;
   }, [history]);
 
-  // Auto-scroll to bottom when history updates
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -51,22 +48,27 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
   };
 
   const getBallColor = (ball: BallRecord) => {
-    if (ball.isWicket) return 'bg-red-500 text-white';
-    if (ball.type !== BallType.NORMAL) return 'bg-blue-900 text-blue-200 border border-blue-700';
-    if (ball.runs >= 4) return 'bg-emerald-600 text-white';
-    return 'bg-slate-800 text-slate-300 border border-slate-700';
+    if (ball.isWicket) return 'bg-rose-500 text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)] ring-1 ring-rose-400';
+    if (ball.type !== BallType.NORMAL) return 'bg-indigo-900/50 text-indigo-300 border border-indigo-700/50';
+    if (ball.runs === 6) return 'bg-yellow-500 text-slate-950 font-black shadow-[0_2px_8px_rgba(234,179,8,0.3)]';
+    if (ball.runs === 4) return 'bg-slate-300 text-slate-950 font-black shadow-[0_2px_8px_rgba(255,255,255,0.2)]';
+    if (ball.runs === 0) return 'bg-slate-900 text-slate-600 border border-slate-800';
+    return 'bg-slate-800 text-slate-100 border border-slate-700';
   };
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-24 text-slate-600 italic text-sm">
-        No balls recorded yet...
+      <div className="flex flex-col items-center justify-center py-12 text-slate-600 border-2 border-dashed border-slate-900 rounded-[2rem]">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-2 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">Waiting for first ball</span>
       </div>
     );
   }
 
   return (
-    <div ref={scrollRef} className="space-y-4 max-h-64 overflow-y-auto pr-2 pb-10">
+    <div className="space-y-3 pb-8">
       {overs.map((over, idx) => {
         const isLastOver = idx === overs.length - 1;
         const legalBallsInOver = over.filter(b => b.type === BallType.NORMAL).length;
@@ -75,25 +77,26 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
         return (
           <div 
             key={idx} 
-            className={`flex flex-col gap-1 p-2 rounded-xl transition-all duration-300 ${
-              isIncomplete ? 'bg-slate-800/40 ring-1 ring-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : ''
+            className={`p-3 rounded-[1.5rem] border transition-all duration-300 ${
+              isIncomplete 
+                ? 'bg-slate-900/30 border-white/5 shadow-inner' 
+                : 'bg-slate-950 border-slate-900'
             }`}
           >
-            <div className="flex justify-between items-center px-1">
-              <span className={`text-[10px] font-bold uppercase tracking-tighter ${isIncomplete ? 'text-emerald-400' : 'text-slate-500'}`}>
+            <div className="flex justify-between items-center mb-2.5 px-1">
+              <span className={`text-[9px] font-black uppercase tracking-widest ${isIncomplete ? 'text-emerald-500' : 'text-slate-600'}`}>
                 {isLastOver && isIncomplete ? 'Current Over' : `Over ${idx + 1}`}
               </span>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+              <div className="h-px flex-1 bg-slate-900 mx-3"></div>
+              <span className="text-[9px] text-slate-600 font-bold uppercase tracking-tighter">
                 {legalBallsInOver}/{BALLS_PER_OVER} Legal
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {over.map((ball) => (
                 <div
                   key={ball.id}
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-xs font-bold shadow-inner transition-transform active:scale-95 ${getBallColor(ball)} ${
-                    isIncomplete ? 'ring-2 ring-emerald-500/30' : ''
-                  }`}
+                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-black transition-transform active:scale-95 ${getBallColor(ball)}`}
                 >
                   {getBallNotation(ball)}
                 </div>

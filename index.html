@@ -1,31 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BoxCricket Umpire</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Prevent elastic scrolling on iOS */
-        body {
-            overscroll-behavior-y: contain;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
-  }
-}
-</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BoxCricket Umpire Pro</title>
+    <!-- Explicitly link style.css for environments that don't auto-bundle CSS imports -->
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+      }
+    }
+    </script>
 </head>
-<body class="bg-slate-900 text-white font-sans">
+<body class="bg-slate-950 text-slate-100 antialiased">
     <div id="root"></div>
 </body>
 </html>

@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --app-height: 100%;
+  }
+  
+  html, body, #root {
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #020617; /* slate-950 */
+  }
+
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .btn-press {
+    @apply transition-transform active:scale-95 duration-75;
+  }
+  
+  .glass-card {
+    @apply bg-slate-900/50 backdrop-blur-md border border-white/5 shadow-xl;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
