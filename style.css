@@ -9,10 +9,13 @@
   
   html, body, #root {
     height: 100dvh;
+    width: 100vw;
     margin: 0;
     padding: 0;
     overflow: hidden;
     background-color: #020617; /* slate-950 */
+    color: #f8fafc; /* slate-50 */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   body {
@@ -20,16 +23,17 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    overscroll-behavior: none;
   }
 }
 
 @layer components {
   .btn-press {
-    @apply transition-transform active:scale-95 duration-75;
+    @apply transition-all active:scale-95 active:brightness-90 duration-75;
   }
   
-  .glass-card {
-    @apply bg-slate-900/50 backdrop-blur-md border border-white/5 shadow-xl;
+  .glass-panel {
+    @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -39,5 +43,10 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .score-font {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
   }
 }

@@ -7,7 +7,7 @@ interface HistoryViewProps {
 }
 
 const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const overs = useMemo(() => {
     const result: BallRecord[][] = [];
@@ -26,79 +26,69 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
       }
     });
 
-    if (currentOver.length > 0) {
-      result.push(currentOver);
-    }
-
+    if (currentOver.length > 0) result.push(currentOver);
     return result;
   }, [history]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [history]);
 
-  const getBallNotation = (ball: BallRecord) => {
+  const getBallDisplay = (ball: BallRecord) => {
     if (ball.isWicket) return 'W';
-    if (ball.type === BallType.WIDE) return `Wd${ball.runs > 0 ? `+${ball.runs}` : ''}`;
-    if (ball.type === BallType.NO_BALL) return `Nb${ball.runs > 0 ? `+${ball.runs}` : ''}`;
-    if (ball.runs === 0) return '•';
-    return ball.runs.toString();
+    if (ball.type === BallType.WIDE) return 'Wd';
+    if (ball.type === BallType.NO_BALL) return 'Nb';
+    return ball.runs === 0 ? '•' : ball.runs.toString();
   };
 
-  const getBallColor = (ball: BallRecord) => {
-    if (ball.isWicket) return 'bg-rose-500 text-white shadow-[0_2px_8px_rgba(225,29,72,0.3)] ring-1 ring-rose-400';
-    if (ball.type !== BallType.NORMAL) return 'bg-indigo-900/50 text-indigo-300 border border-indigo-700/50';
-    if (ball.runs === 6) return 'bg-yellow-500 text-slate-950 font-black shadow-[0_2px_8px_rgba(234,179,8,0.3)]';
-    if (ball.runs === 4) return 'bg-slate-300 text-slate-950 font-black shadow-[0_2px_8px_rgba(255,255,255,0.2)]';
-    if (ball.runs === 0) return 'bg-slate-900 text-slate-600 border border-slate-800';
-    return 'bg-slate-800 text-slate-100 border border-slate-700';
+  const getBallClass = (ball: BallRecord) => {
+    const base = "w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black shadow-md transition-all active:scale-90 ";
+    if (ball.isWicket) return base + "bg-rose-600 text-white ring-2 ring-rose-400 shadow-rose-900/40";
+    if (ball.type !== BallType.NORMAL) return base + "bg-indigo-900/40 text-indigo-300 border border-indigo-700/50";
+    if (ball.runs === 6) return base + "bg-yellow-500 text-slate-950 scale-105 shadow-yellow-900/40";
+    if (ball.runs === 4) return base + "bg-slate-200 text-slate-950";
+    return base + "bg-slate-900 text-slate-500 border border-slate-800";
   };
 
   if (history.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-slate-600 border-2 border-dashed border-slate-900 rounded-[2rem]">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-2 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">Waiting for first ball</span>
+      <div className="flex flex-col items-center justify-center py-16 text-slate-700 border-2 border-dashed border-slate-900 rounded-[2.5rem] bg-slate-900/10">
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">First Ball Pending</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 pb-8">
+    <div ref={containerRef} className="space-y-4">
       {overs.map((over, idx) => {
-        const isLastOver = idx === overs.length - 1;
-        const legalBallsInOver = over.filter(b => b.type === BallType.NORMAL).length;
-        const isIncomplete = isLastOver && legalBallsInOver < BALLS_PER_OVER;
+        const isCurrent = idx === overs.length - 1;
+        const legalInOver = over.filter(b => b.type === BallType.NORMAL).length;
 
         return (
           <div 
             key={idx} 
-            className={`p-3 rounded-[1.5rem] border transition-all duration-300 ${
-              isIncomplete 
-                ? 'bg-slate-900/30 border-white/5 shadow-inner' 
-                : 'bg-slate-950 border-slate-900'
+            className={`p-4 rounded-[2rem] border transition-all duration-300 ${
+              isCurrent 
+                ? 'bg-slate-900/30 border-indigo-500/20 shadow-xl' 
+                : 'bg-slate-950 border-slate-900 shadow-sm'
             }`}
           >
-            <div className="flex justify-between items-center mb-2.5 px-1">
-              <span className={`text-[9px] font-black uppercase tracking-widest ${isIncomplete ? 'text-emerald-500' : 'text-slate-600'}`}>
-                {isLastOver && isIncomplete ? 'Current Over' : `Over ${idx + 1}`}
+            <div className="flex flex-row justify-between items-center mb-4">
+              <span className={`text-[10px] font-black uppercase tracking-widest ${isCurrent ? 'text-indigo-400' : 'text-slate-600'}`}>
+                {isCurrent && legalInOver < BALLS_PER_OVER ? 'Active Over' : `Completed Over ${idx + 1}`}
               </span>
-              <div className="h-px flex-1 bg-slate-900 mx-3"></div>
-              <span className="text-[9px] text-slate-600 font-bold uppercase tracking-tighter">
-                {legalBallsInOver}/{BALLS_PER_OVER} Legal
+              <div className="h-px flex-1 bg-slate-900 mx-4"></div>
+              <span className="text-[10px] font-bold text-slate-700 uppercase">
+                {legalInOver}/{BALLS_PER_OVER} Legal
               </span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            
+            <div className="flex flex-row flex-wrap gap-3">
               {over.map((ball) => (
-                <div
-                  key={ball.id}
-                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-black transition-transform active:scale-95 ${getBallColor(ball)}`}
-                >
-                  {getBallNotation(ball)}
+                <div key={ball.id} className={getBallClass(ball)}>
+                  {getBallDisplay(ball)}
                 </div>
               ))}
             </div>

@@ -53,6 +53,7 @@ const App: React.FC = () => {
   };
 
   const undoLastBall = () => {
+    if (history.length === 0) return;
     Haptics.medium();
     setHistory(prev => prev.slice(0, -1));
   };
@@ -99,12 +100,12 @@ const App: React.FC = () => {
   }, [history]);
 
   return (
-    <div className="flex flex-col h-full max-w-md mx-auto bg-slate-950 border-x border-slate-900 shadow-2xl relative">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-indigo-500/10 blur-[120px] pointer-events-none -z-10"></div>
-      
-      {/* 1. Sticky Header Section */}
-      <header className="p-4 pt-6 shrink-0">
+    <div className="flex flex-col h-full w-full max-w-md mx-auto bg-slate-950 relative overflow-hidden shadow-2xl">
+      {/* Dynamic Background Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[40%] bg-indigo-500/5 blur-[100px] pointer-events-none -z-10" />
+
+      {/* 1. Sticky Header: Scoreboard */}
+      <header className="px-4 pt-6 shrink-0 z-10">
         <Scoreboard 
           runs={stats.totalRuns} 
           wickets={stats.wickets} 
@@ -114,36 +115,38 @@ const App: React.FC = () => {
         />
       </header>
 
-      {/* 2. Scrollable Body Content */}
-      <main className="flex-1 overflow-y-auto px-4 pb-20 no-scrollbar space-y-6">
-        <section className="mt-2">
-          <div className="flex items-center gap-4 mb-4">
-             <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase whitespace-nowrap">Input Controls</span>
-             <div className="h-[1px] w-full bg-slate-900"></div>
+      {/* 2. Scrollable Body: Controls and History */}
+      <main className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar z-10 space-y-8">
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+             <div className="h-px flex-1 bg-slate-900"></div>
+             <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">Field Controls</span>
+             <div className="h-px flex-1 bg-slate-900"></div>
           </div>
           <Controls onAction={addBall} onUndo={undoLastBall} canUndo={history.length > 0} />
         </section>
         
         <MatchAnalyst history={history} />
 
-        <section>
-          <div className="flex items-center gap-4 mb-4">
-             <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase whitespace-nowrap">Innings Timeline</span>
-             <div className="h-[1px] w-full bg-slate-900"></div>
+        <section className="pb-24">
+          <div className="flex items-center gap-3 mb-4">
+             <div className="h-px flex-1 bg-slate-900"></div>
+             <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">Match Log</span>
+             <div className="h-px flex-1 bg-slate-900"></div>
           </div>
           <HistoryView history={history} />
         </section>
       </main>
 
-      {/* 3. Sticky Footer Information */}
-      <footer className="shrink-0 p-4 bg-slate-950/80 backdrop-blur-xl border-t border-slate-900 flex justify-between items-center">
+      {/* 3. Sticky Footer: App Info */}
+      <footer className="shrink-0 px-6 py-4 bg-slate-950/90 backdrop-blur-md border-t border-slate-900 flex justify-between items-center z-20">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">BoxCricket Elite</span>
-          <span className="text-[10px] text-slate-400 font-medium">Digital Umpire v2.4</span>
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">BoxCricket Elite</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">V2.5 Stable</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Live Session</span>
+          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live Umpire</span>
         </div>
       </footer>
     </div>
