@@ -1,13 +1,14 @@
-
 {
   "name": "box-cricket-umpire",
   "version": "1.0.0",
   "description": "Minimalistic mobile-optimized cricket scoring tool",
+  "type": "module",
   "main": "index.tsx",
   "scripts": {
+    "dev": "vite",
     "start": "vite",
-    "build": "tailwindcss -i ./style.css -o ./dist/style.css && vite build",
-    "serve": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -19,6 +20,7 @@
     "postcss": "^8.4.35",
     "autoprefixer": "^10.4.18",
     "typescript": "^5.3.3",
-    "vite": "^5.1.4"
+    "vite": "^5.1.4",
+    "@vitejs/plugin-react": "^4.2.1"
   }
 }

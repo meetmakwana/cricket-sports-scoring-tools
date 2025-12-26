@@ -100,12 +100,12 @@ const App: React.FC = () => {
   }, [history]);
 
   return (
-    <div className="flex flex-col h-full w-full max-w-md mx-auto bg-slate-950 relative overflow-hidden shadow-2xl">
-      {/* Dynamic Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[40%] bg-indigo-500/5 blur-[100px] pointer-events-none -z-10" />
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-slate-950 relative overflow-hidden shadow-2xl ring-1 ring-white/5">
+      {/* Atmosphere Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[40%] bg-indigo-600/10 blur-[120px] pointer-events-none" />
 
-      {/* 1. Sticky Header: Scoreboard */}
-      <header className="px-4 pt-6 shrink-0 z-10">
+      {/* 1. Header: Fixed Scoreboard */}
+      <header className="px-4 pt-6 shrink-0 z-20">
         <Scoreboard 
           runs={stats.totalRuns} 
           wickets={stats.wickets} 
@@ -115,38 +115,41 @@ const App: React.FC = () => {
         />
       </header>
 
-      {/* 2. Scrollable Body: Controls and History */}
-      <main className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar z-10 space-y-8">
+      {/* 2. Scrollable Body Content */}
+      <main className="flex-1 overflow-y-auto px-4 py-4 no-scrollbar z-10 space-y-8 scroll-smooth">
         <section>
-          <div className="flex items-center gap-3 mb-4">
-             <div className="h-px flex-1 bg-slate-900"></div>
-             <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">Field Controls</span>
-             <div className="h-px flex-1 bg-slate-900"></div>
+          <div className="flex items-center gap-3 mb-5 px-1">
+             <div className="h-[2px] w-8 bg-indigo-500 rounded-full"></div>
+             <span className="text-[10px] font-black tracking-[0.25em] text-slate-500 uppercase">Umpire Dashboard</span>
+             <div className="h-[1px] flex-1 bg-slate-900"></div>
           </div>
           <Controls onAction={addBall} onUndo={undoLastBall} canUndo={history.length > 0} />
         </section>
         
         <MatchAnalyst history={history} />
 
-        <section className="pb-24">
-          <div className="flex items-center gap-3 mb-4">
-             <div className="h-px flex-1 bg-slate-900"></div>
-             <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase">Match Log</span>
-             <div className="h-px flex-1 bg-slate-900"></div>
+        <section className="pb-32">
+          <div className="flex items-center gap-3 mb-5 px-1">
+             <div className="h-[2px] w-8 bg-emerald-500 rounded-full"></div>
+             <span className="text-[10px] font-black tracking-[0.25em] text-slate-500 uppercase">Match History</span>
+             <div className="h-[1px] flex-1 bg-slate-900"></div>
           </div>
           <HistoryView history={history} />
         </section>
       </main>
 
-      {/* 3. Sticky Footer: App Info */}
-      <footer className="shrink-0 px-6 py-4 bg-slate-950/90 backdrop-blur-md border-t border-slate-900 flex justify-between items-center z-20">
+      {/* 3. Sticky Bottom: Status Bar */}
+      <footer className="shrink-0 px-6 py-4 bg-slate-950/95 backdrop-blur-xl border-t border-slate-900/50 flex justify-between items-center z-30 safe-area-bottom">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">BoxCricket Elite</span>
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">V2.5 Stable</span>
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Elite Cricket Hub</span>
+          <span className="text-[10px] text-slate-400 font-bold tracking-tight">V2.5 Stable Production</span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Live Umpire</span>
+        <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-500/5 rounded-full border border-emerald-500/20">
+          <div className="relative">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+            <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
+          </div>
+          <span className="text-[9px] font-black text-emerald-500/90 uppercase tracking-widest">System Online</span>
         </div>
       </footer>
     </div>

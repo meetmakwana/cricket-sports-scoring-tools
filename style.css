@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --app-height: 100%;
+    --app-height: 100dvh;
   }
   
   html, body, #root {
@@ -24,16 +24,21 @@
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     overscroll-behavior: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 }
 
 @layer components {
   .btn-press {
-    @apply transition-all active:scale-95 active:brightness-90 duration-75;
+    @apply transition-all active:scale-90 active:brightness-75 duration-75 select-none;
   }
   
   .glass-panel {
-    @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -48,5 +53,9 @@
   .score-font {
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.05em;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { BallRecord } from '../types';
@@ -27,7 +26,7 @@ const MatchAnalyst: React.FC<MatchAnalystProps> = ({ history }) => {
                    Focus on momentum or pressure.`,
       });
 
-      setInsight(response.text || "Keep the pressure on!");
+      setInsight(response.text?.trim() || "Keep the pressure on!");
     } catch (error) {
       console.error("AI Insight failed", error);
       setInsight("Bowling tight lines will restrict the run flow.");
@@ -39,36 +38,40 @@ const MatchAnalyst: React.FC<MatchAnalystProps> = ({ history }) => {
   if (history.length < 6) return null;
 
   return (
-    <div className="mt-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 overflow-hidden relative">
-      <div className="flex items-center justify-between mb-2">
+    <div className="glass-panel rounded-[1.5rem] p-5 overflow-hidden relative group transition-all duration-500 hover:border-indigo-500/30">
+      {/* Pulse line decoration */}
+      <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/50 group-hover:h-full transition-all"></div>
+      
+      <div className="flex items-center justify-between mb-3 relative z-10">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-          <h4 className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Match Analyst</h4>
+          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.5)]" />
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Tactical AI</h4>
         </div>
         <button 
           onClick={generateInsight}
           disabled={loading}
-          className="text-[10px] font-bold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-3 py-1 rounded-full transition-all"
+          className="btn-press text-[9px] font-black bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 disabled:opacity-50 px-4 py-1.5 rounded-full transition-all text-indigo-300 uppercase tracking-widest"
         >
-          {loading ? 'ANALYZING...' : 'GET INSIGHT'}
+          {loading ? 'Consulting...' : 'Get Insight'}
         </button>
       </div>
       
-      {insight && !loading && (
-        <p className="text-sm text-slate-300 font-medium animate-in fade-in slide-in-from-bottom-2 duration-500">
-          "{insight}"
-        </p>
-      )}
-      
-      {loading && (
-        <div className="h-4 bg-slate-700/50 rounded animate-pulse w-3/4" />
-      )}
-      
-      {!insight && !loading && (
-        <p className="text-[11px] text-slate-500 italic">
-          Click above for tactical AI insights based on current momentum.
-        </p>
-      )}
+      <div className="min-h-[2.5rem] flex items-center relative z-10">
+        {insight && !loading ? (
+          <p className="text-sm text-slate-200 font-medium italic leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-500">
+            "{insight}"
+          </p>
+        ) : loading ? (
+          <div className="w-full space-y-2">
+            <div className="h-2 bg-slate-800 rounded animate-pulse w-full" />
+            <div className="h-2 bg-slate-800 rounded animate-pulse w-2/3" />
+          </div>
+        ) : (
+          <p className="text-[11px] text-slate-500 italic font-medium">
+            Tap the insight button to analyze the current match momentum.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
