@@ -4,7 +4,11 @@
 
 @layer base {
   :root {
-    --app-height: 100dvh;
+    --bg-main: #0B120E;
+    --card-bg: #16211B;
+    --neon-green: #10B981; /* Precise emerald/green from image */
+    --wicket-red: #EF4444;
+    --extra-gold: #A16207;
   }
   
   html, body, #root {
@@ -13,8 +17,8 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #020617; /* slate-950 */
-    color: #f8fafc; /* slate-50 */
+    background-color: var(--bg-main);
+    color: #FFFFFF;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
@@ -23,22 +27,16 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    overscroll-behavior: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
   }
 }
 
 @layer components {
   .btn-press {
-    @apply transition-all active:scale-90 active:brightness-75 duration-75 select-none;
+    @apply transition-all active:scale-95 active:brightness-90 duration-75 select-none;
   }
   
-  .glass-panel {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl;
+  .glass-card {
+    @apply bg-[#16211B] border border-white/5 shadow-xl;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -50,12 +48,19 @@
     scrollbar-width: none;
   }
 
-  .score-font {
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.05em;
+  .neon-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
   }
 
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+  .text-shadow-neon {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  }
+
+  .pill {
+    @apply flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-[#16211B];
+  }
+
+  .ball-circle {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shrink-0;
   }
 }

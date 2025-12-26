@@ -3,85 +3,74 @@ import { BallType } from '../types';
 
 interface ControlsProps {
   onAction: (runs: number, type: BallType, isWicket: boolean) => void;
-  onUndo: () => void;
-  canUndo: boolean;
 }
 
-const Controls: React.FC<ControlsProps> = ({ onAction, onUndo, canUndo }) => {
-  const runButtons = [0, 1, 2, 3];
-  const majorRuns = [4, 6];
-
+const Controls: React.FC<ControlsProps> = ({ onAction }) => {
   return (
-    <div className="flex flex-col gap-4">
-      {/* 4-Column Grid for Singles/Dots */}
-      <div className="grid grid-cols-4 gap-3">
-        {runButtons.map(r => (
-          <button
-            key={r}
-            onClick={() => onAction(r, BallType.NORMAL, false)}
-            className="btn-press aspect-square bg-slate-900 border border-slate-800 rounded-3xl flex flex-col items-center justify-center hover:bg-slate-800 shadow-lg"
-          >
-            <span className="text-3xl font-black text-white leading-none">{r}</span>
-            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Runs</span>
-          </button>
-        ))}
-      </div>
+    <div className="grid grid-cols-3 gap-3">
+      {/* Row 1 */}
+      <button 
+        onClick={() => onAction(0, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#222E26] rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-3xl font-black text-white">0</span>
+        <span className="text-[9px] font-black text-white/30 uppercase tracking-widest mt-0.5">Dot</span>
+      </button>
+      <button 
+        onClick={() => onAction(1, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#222E26] rounded-2xl flex items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-3xl font-black text-white">1</span>
+      </button>
+      <button 
+        onClick={() => onAction(2, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#222E26] rounded-2xl flex items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-3xl font-black text-white">2</span>
+      </button>
 
-      {/* High Impact Row: Boundaries and Wickets */}
-      <div className="grid grid-cols-3 gap-3">
-        {majorRuns.map(r => (
-          <button
-            key={r}
-            onClick={() => onAction(r, BallType.NORMAL, false)}
-            className="btn-press aspect-[1.4/1] bg-emerald-600 border border-emerald-400/20 rounded-3xl flex flex-col items-center justify-center shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
-          >
-            <span className="text-4xl font-black text-white leading-none">{r}</span>
-            <span className="text-[10px] text-emerald-100 font-black uppercase tracking-widest mt-1">Boundary</span>
-          </button>
-        ))}
-        
-        <button
-          onClick={() => onAction(0, BallType.NORMAL, true)}
-          className="btn-press aspect-[1.4/1] bg-rose-600 border border-rose-400/20 rounded-3xl flex flex-col items-center justify-center shadow-[0_10px_20px_rgba(225,29,72,0.2)]"
-        >
-          <span className="text-2xl font-black text-white leading-none uppercase">Out</span>
-          <span className="text-[10px] text-rose-100 font-black uppercase tracking-widest mt-1">Wicket</span>
-        </button>
-      </div>
+      {/* Row 2 */}
+      <button 
+        onClick={() => onAction(3, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#222E26] rounded-2xl flex items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-3xl font-black text-white">3</span>
+      </button>
+      <button 
+        onClick={() => onAction(4, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#10B981] neon-glow-green rounded-2xl flex items-center justify-center shadow-lg"
+      >
+        <span className="text-4xl font-black text-black">4</span>
+      </button>
+      <button 
+        onClick={() => onAction(6, BallType.NORMAL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#10B981] neon-glow-green rounded-2xl flex items-center justify-center shadow-lg"
+      >
+        <span className="text-4xl font-black text-black">6</span>
+      </button>
 
-      {/* Utilities Row: Extras and Undo */}
-      <div className="grid grid-cols-3 gap-3">
-        <button
-          onClick={() => onAction(0, BallType.WIDE, false)}
-          className="btn-press py-4 bg-indigo-600/20 border border-indigo-500/30 rounded-2xl flex flex-col items-center"
-        >
-          <span className="text-sm font-black text-indigo-300 uppercase tracking-widest">Wide</span>
-          <span className="text-[9px] text-indigo-500/70 font-black">+1 Extra</span>
-        </button>
-
-        <button
-          onClick={() => onAction(0, BallType.NO_BALL, false)}
-          className="btn-press py-4 bg-amber-600/20 border border-amber-500/30 rounded-2xl flex flex-col items-center"
-        >
-          <span className="text-sm font-black text-amber-300 uppercase tracking-widest">No Ball</span>
-          <span className="text-[9px] text-amber-500/70 font-black">+1 Extra</span>
-        </button>
-
-        <button
-          disabled={!canUndo}
-          onClick={onUndo}
-          className={`btn-press py-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${
-              canUndo 
-              ? 'bg-slate-800 border-slate-700 text-slate-300' 
-              : 'bg-slate-900/30 border-transparent text-slate-700'
-          }`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-          </svg>
-          <span className="text-[10px] font-black uppercase tracking-widest leading-none">Undo</span>
-        </button>
-      </div>
+      {/* Row 3 */}
+      <button 
+        onClick={() => onAction(0, BallType.WIDE, false)}
+        className="btn-press aspect-[1.3/1] bg-[#3B2B15] rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-2xl font-black text-[#F59E0B]">WD</span>
+        <span className="text-[9px] font-black text-[#F59E0B]/50 uppercase tracking-widest mt-0.5">Wide</span>
+      </button>
+      <button 
+        onClick={() => onAction(0, BallType.NO_BALL, false)}
+        className="btn-press aspect-[1.3/1] bg-[#3B2B15] rounded-2xl flex flex-col items-center justify-center border border-white/5 shadow-md"
+      >
+        <span className="text-2xl font-black text-[#F59E0B]">NB</span>
+        <span className="text-[9px] font-black text-[#F59E0B]/50 uppercase tracking-widest mt-0.5">No Ball</span>
+      </button>
+      <button 
+        onClick={() => onAction(0, BallType.NORMAL, true)}
+        className="btn-press aspect-[1.3/1] bg-[#EF4444] rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-rose-950/20"
+      >
+        <span className="text-2xl font-black text-white uppercase tracking-tighter">OUT</span>
+        <span className="text-[9px] font-black text-white/60 uppercase tracking-widest mt-0.5">Wicket</span>
+      </button>
     </div>
   );
 };

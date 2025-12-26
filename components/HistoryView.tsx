@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { BallRecord, BallType } from '../types';
 import { BALLS_PER_OVER } from '../constants';
 
@@ -7,94 +7,79 @@ interface HistoryViewProps {
 }
 
 const HistoryView: React.FC<HistoryViewProps> = ({ history }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const overs = useMemo(() => {
-    const result: BallRecord[][] = [];
-    let currentOver: BallRecord[] = [];
-    let legalBallsCount = 0;
+  const completedOvers = useMemo(() => {
+    const overs: { balls: BallRecord[], runs: number }[] = [];
+    let currentOverBalls: BallRecord[] = [];
+    let currentOverRuns = 0;
+    let legalBalls = 0;
 
     history.forEach(ball => {
-      currentOver.push(ball);
+      currentOverBalls.push(ball);
+      currentOverRuns += ball.runs + (ball.type !== BallType.NORMAL ? 1 : 0);
+      
       if (ball.type === BallType.NORMAL) {
-        legalBallsCount++;
-        if (legalBallsCount === BALLS_PER_OVER) {
-          result.push([...currentOver]);
-          currentOver = [];
-          legalBallsCount = 0;
+        legalBalls++;
+        if (legalBalls === BALLS_PER_OVER) {
+          overs.unshift({ balls: [...currentOverBalls], runs: currentOverRuns });
+          currentOverBalls = [];
+          currentOverRuns = 0;
+          legalBalls = 0;
         }
       }
     });
 
-    if (currentOver.length > 0) result.push(currentOver);
-    return result;
+    return overs;
   }, [history]);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, [history]);
-
-  const getBallDisplay = (ball: BallRecord) => {
-    if (ball.isWicket) return 'W';
-    if (ball.type === BallType.WIDE) return 'Wd';
-    if (ball.type === BallType.NO_BALL) return 'Nb';
-    return ball.runs === 0 ? '•' : ball.runs.toString();
-  };
 
   const getBallClass = (ball: BallRecord) => {
-    const base = "w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black shadow-md transition-all active:scale-90 ";
-    if (ball.isWicket) return base + "bg-rose-600 text-white ring-2 ring-rose-400 shadow-rose-900/40";
-    if (ball.type !== BallType.NORMAL) return base + "bg-indigo-900/40 text-indigo-300 border border-indigo-700/50";
-    if (ball.runs === 6) return base + "bg-yellow-500 text-slate-950 scale-105 shadow-yellow-900/40";
-    if (ball.runs === 4) return base + "bg-slate-200 text-slate-950";
-    return base + "bg-slate-900 text-slate-500 border border-slate-800";
+    if (ball.isWicket) return "bg-rose-500 text-white";
+    if (ball.runs === 4 || ball.runs === 6) return "bg-[#10B981] text-black";
+    if (ball.type !== BallType.NORMAL) return "bg-orange-700/30 text-orange-400 border border-orange-500/20";
+    return "bg-white/10 text-white/60";
   };
 
-  if (history.length === 0) {
+  const getBallText = (ball: BallRecord) => {
+    if (ball.isWicket) return "w";
+    if (ball.type === BallType.WIDE) return "wd";
+    if (ball.type === BallType.NO_BALL) return "nb";
+    return ball.runs.toString();
+  };
+
+  if (completedOvers.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-slate-700 border-2 border-dashed border-slate-900 rounded-[2.5rem] bg-slate-900/10">
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">First Ball Pending</span>
+      <div className="flex flex-col items-center py-8 text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">
+        No completed overs yet
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="space-y-4">
-      {overs.map((over, idx) => {
-        const isCurrent = idx === overs.length - 1;
-        const legalInOver = over.filter(b => b.type === BallType.NORMAL).length;
-
-        return (
-          <div 
-            key={idx} 
-            className={`p-4 rounded-[2rem] border transition-all duration-300 ${
-              isCurrent 
-                ? 'bg-slate-900/30 border-indigo-500/20 shadow-xl' 
-                : 'bg-slate-950 border-slate-900 shadow-sm'
-            }`}
-          >
-            <div className="flex flex-row justify-between items-center mb-4">
-              <span className={`text-[10px] font-black uppercase tracking-widest ${isCurrent ? 'text-indigo-400' : 'text-slate-600'}`}>
-                {isCurrent && legalInOver < BALLS_PER_OVER ? 'Active Over' : `Completed Over ${idx + 1}`}
-              </span>
-              <div className="h-px flex-1 bg-slate-900 mx-4"></div>
-              <span className="text-[10px] font-bold text-slate-700 uppercase">
-                {legalInOver}/{BALLS_PER_OVER} Legal
-              </span>
+    <div className="space-y-3">
+      {completedOvers.map((over, idx) => (
+        <div 
+          key={`over-${completedOvers.length - idx}`} 
+          className="bg-[#16211B]/40 rounded-2xl p-4 flex items-center justify-between border border-white/5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="px-2 py-1 rounded bg-white/5 text-[9px] font-black text-white/40 uppercase">
+              OV {completedOvers.length - idx}
             </div>
-            
-            <div className="flex flex-row flex-wrap gap-3">
-              {over.map((ball) => (
-                <div key={ball.id} className={getBallClass(ball)}>
-                  {getBallDisplay(ball)}
+            <div className="flex items-center gap-1.5">
+              {over.balls.map(ball => (
+                <div 
+                  key={ball.id} 
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${getBallClass(ball)}`}
+                >
+                  {getBallText(ball)}
                 </div>
               ))}
             </div>
           </div>
-        );
-      })}
+          <div className="text-[11px] font-black text-white/80 uppercase">
+            {over.runs} {over.runs === 1 ? 'Run' : 'Runs'}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

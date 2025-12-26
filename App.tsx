@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { BallRecord, BallType, InningsState } from './types';
 import { STORAGE_KEY, BALLS_PER_OVER } from './constants';
 import Scoreboard from './components/Scoreboard';
 import Controls from './components/Controls';
+import CurrentOver from './components/CurrentOver';
 import HistoryView from './components/HistoryView';
-import MatchAnalyst from './components/MatchAnalyst';
 import { Haptics } from './services/vibration';
 
 const App: React.FC = () => {
   const [history, setHistory] = useState<BallRecord[]>([]);
-  const [isConfirmingReset, setIsConfirmingReset] = useState(false);
-  const resetTimerRef = useRef<number | null>(null);
-
+  
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -22,9 +20,6 @@ const App: React.FC = () => {
         console.error("Failed to load state", e);
       }
     }
-    return () => {
-      if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
-    };
   }, []);
 
   useEffect(() => {
@@ -32,11 +27,6 @@ const App: React.FC = () => {
   }, [history]);
 
   const addBall = (runs: number, type: BallType, isWicket: boolean) => {
-    if (isConfirmingReset) {
-      setIsConfirmingReset(false);
-      if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
-    }
-
     const newBall: BallRecord = {
       id: Math.random().toString(36).substring(2, 11),
       runs,
@@ -46,7 +36,7 @@ const App: React.FC = () => {
     };
     
     if (isWicket) Haptics.heavy();
-    else if (type !== BallType.NORMAL) Haptics.medium();
+    else if (runs >= 4) Haptics.medium();
     else Haptics.light();
 
     setHistory(prev => [...prev, newBall]);
@@ -58,18 +48,10 @@ const App: React.FC = () => {
     setHistory(prev => prev.slice(0, -1));
   };
 
-  const handleResetRequest = () => {
-    if (!isConfirmingReset) {
-      Haptics.light();
-      setIsConfirmingReset(true);
-      resetTimerRef.current = window.setTimeout(() => {
-        setIsConfirmingReset(false);
-      }, 3000);
-    } else {
+  const resetMatch = () => {
+    if (window.confirm("Are you sure you want to reset this innings?")) {
       Haptics.error();
       setHistory([]);
-      setIsConfirmingReset(false);
-      if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
     }
   };
 
@@ -90,68 +72,101 @@ const App: React.FC = () => {
 
     const completedOvers = Math.floor(legalBalls / BALLS_PER_OVER);
     const currentOverBalls = legalBalls % BALLS_PER_OVER;
+    const oversDisplay = `${completedOvers}.${currentOverBalls}`;
+    
+    const oversAsNum = completedOvers + (currentOverBalls / 6);
+    const crr = oversAsNum > 0 ? (totalRuns / oversAsNum).toFixed(1) : "0.0";
+
+    // Current over logic
+    const currentOverHistory: BallRecord[] = [];
+    let count = 0;
+    for (let i = history.length - 1; i >= 0; i--) {
+      currentOverHistory.unshift(history[i]);
+      if (history[i].type === BallType.NORMAL) count++;
+      if (count === (currentOverBalls || BALLS_PER_OVER) && history[i].type === BallType.NORMAL) break;
+    }
+
+    const currentOverRuns = currentOverHistory.reduce((sum, b) => 
+      sum + b.runs + (b.type !== BallType.NORMAL ? 1 : 0), 0);
 
     return {
       totalRuns,
       wickets,
-      oversDisplay: `${completedOvers}.${currentOverBalls}`,
-      legalBalls
+      oversDisplay,
+      crr,
+      currentOverHistory,
+      currentOverRuns
     };
   }, [history]);
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-slate-950 relative overflow-hidden shadow-2xl ring-1 ring-white/5">
-      {/* Atmosphere Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[40%] bg-indigo-600/10 blur-[120px] pointer-events-none" />
-
-      {/* 1. Header: Fixed Scoreboard */}
-      <header className="px-4 pt-6 shrink-0 z-20">
-        <Scoreboard 
-          runs={stats.totalRuns} 
-          wickets={stats.wickets} 
-          overs={stats.oversDisplay}
-          onReset={handleResetRequest}
-          isConfirmingReset={isConfirmingReset}
-        />
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-[#0B120E] text-white overflow-hidden select-none">
+      {/* 1. Header */}
+      <header className="flex items-center justify-between px-6 pt-10 pb-4 shrink-0">
+        <button className="p-2 -ml-2 text-white/80 active:scale-90 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h1 className="text-xl font-black tracking-tight text-white/90">Innings 1</h1>
+        <button className="text-sm font-black text-[#10B981] px-4 py-2 rounded-full uppercase tracking-wider active:bg-white/5">
+          End Innings
+        </button>
       </header>
 
-      {/* 2. Scrollable Body Content */}
-      <main className="flex-1 overflow-y-auto px-4 py-4 no-scrollbar z-10 space-y-8 scroll-smooth">
-        <section>
-          <div className="flex items-center gap-3 mb-5 px-1">
-             <div className="h-[2px] w-8 bg-indigo-500 rounded-full"></div>
-             <span className="text-[10px] font-black tracking-[0.25em] text-slate-500 uppercase">Umpire Dashboard</span>
-             <div className="h-[1px] flex-1 bg-slate-900"></div>
-          </div>
-          <Controls onAction={addBall} onUndo={undoLastBall} canUndo={history.length > 0} />
+      <main className="flex-1 flex flex-col px-6 overflow-y-auto no-scrollbar">
+        {/* 2. Scoreboard Section */}
+        <section className="flex flex-col items-center py-4 shrink-0">
+          <Scoreboard 
+            runs={stats.totalRuns} 
+            wickets={stats.wickets} 
+            overs={stats.oversDisplay} 
+            crr={stats.crr}
+          />
         </section>
-        
-        <MatchAnalyst history={history} />
 
-        <section className="pb-32">
-          <div className="flex items-center gap-3 mb-5 px-1">
-             <div className="h-[2px] w-8 bg-emerald-500 rounded-full"></div>
-             <span className="text-[10px] font-black tracking-[0.25em] text-slate-500 uppercase">Match History</span>
-             <div className="h-[1px] flex-1 bg-slate-900"></div>
+        {/* 3. This Over Strip */}
+        <section className="mb-8 shrink-0">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">This Over</span>
+            <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{stats.currentOverRuns} Runs</span>
+          </div>
+          <CurrentOver history={stats.currentOverHistory} />
+        </section>
+
+        {/* 4. Controls Section */}
+        <section className="shrink-0 mb-6">
+          <div className="bg-[#16211B]/50 rounded-[2.5rem] p-5 space-y-6">
+            <Controls onAction={addBall} />
+            
+            <button 
+              onClick={undoLastBall}
+              className="btn-press w-full py-5 rounded-[1.5rem] border-2 border-dashed border-white/10 flex items-center justify-center gap-3 text-white/50 font-black text-sm uppercase tracking-widest hover:border-white/20"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+              Undo Last Ball
+            </button>
+          </div>
+        </section>
+
+        {/* 5. Reset Innings */}
+        <div className="flex justify-center mb-10">
+          <button 
+            onClick={resetMatch}
+            className="flex items-center gap-2 text-[#EF4444] font-black text-[11px] uppercase tracking-widest py-2 px-4 active:scale-95 transition-transform"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset Innings
+          </button>
+        </div>
+
+        {/* 6. Completed Overs History */}
+        <section className="pb-20">
+          <div className="flex items-center justify-between mb-4 px-1">
+             <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Completed Overs</span>
+             <span className="text-[9px] font-black bg-white/5 text-white/30 px-3 py-1 rounded-full uppercase">{Math.floor(stats.totalRuns/stats.totalRuns || 0)} Overs</span>
           </div>
           <HistoryView history={history} />
         </section>
       </main>
-
-      {/* 3. Sticky Bottom: Status Bar */}
-      <footer className="shrink-0 px-6 py-4 bg-slate-950/95 backdrop-blur-xl border-t border-slate-900/50 flex justify-between items-center z-30 safe-area-bottom">
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Elite Cricket Hub</span>
-          <span className="text-[10px] text-slate-400 font-bold tracking-tight">V2.5 Stable Production</span>
-        </div>
-        <div className="flex items-center gap-2.5 px-3 py-1.5 bg-emerald-500/5 rounded-full border border-emerald-500/20">
-          <div className="relative">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-            <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
-          </div>
-          <span className="text-[9px] font-black text-emerald-500/90 uppercase tracking-widest">System Online</span>
-        </div>
-      </footer>
     </div>
   );
 };
