@@ -6,9 +6,10 @@ interface ScoreboardProps {
   wickets: number;
   overs: string;
   onReset: () => void;
+  isConfirmingReset?: boolean;
 }
 
-const Scoreboard: React.FC<ScoreboardProps> = ({ runs, wickets, overs, onReset }) => {
+const Scoreboard: React.FC<ScoreboardProps> = ({ runs, wickets, overs, onReset, isConfirmingReset }) => {
   return (
     <div className="flex justify-between items-center">
       <div className="flex flex-col">
@@ -22,10 +23,17 @@ const Scoreboard: React.FC<ScoreboardProps> = ({ runs, wickets, overs, onReset }
       
       <div className="flex flex-col items-end">
         <button 
-          onClick={onReset}
-          className="mb-4 text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-slate-300"
+          onClick={(e) => {
+            e.stopPropagation();
+            onReset();
+          }}
+          className={`mb-4 text-[10px] font-bold px-3 py-1.5 rounded transition-all duration-200 uppercase tracking-wider ${
+            isConfirmingReset 
+              ? 'bg-red-600 text-white animate-pulse ring-2 ring-red-400' 
+              : 'bg-slate-800 hover:bg-slate-700 text-slate-400'
+          }`}
         >
-          RESET
+          {isConfirmingReset ? 'CONFIRM?' : 'RESET'}
         </button>
         <div className="text-right">
           <span className="text-slate-400 text-xs font-bold uppercase block">Overs</span>
